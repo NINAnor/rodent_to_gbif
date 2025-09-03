@@ -28,14 +28,14 @@ library(fs)
 year <- 2024
 
 # Import files
-setwd("/run/user/210015540/gvfs/sftp:host=login.nird.sigma2.no,user=jwiel/nird/projects/NS11082K/national_monitoring/")
-metadata_raw <- readr::read_delim(here::here("gbif", "raw", "image_metadata", "national_monitoring_rodents_cameratraps_image_metadata_borgefjell_2024.txt"),
+setwd("/run/user/210015540/gvfs/sftp:host=login.nird.sigma2.no,user=jwiel/nird/projects/NS11082K/national_monitoring/gbif/")
+metadata_raw <- readr::read_delim(here::here("raw", "image_metadata", "national_monitoring_rodents_cameratraps_image_metadata_borgefjell_2024.txt"),
  delim = ";")
 
-classif_raw <- readr::read_delim(here::here("gbif", "raw", "image_classification_small_mammal_model_2025", "national_monitoring_rodents_cameratraps_image_classification_borgefjell_2024.txt"),
+classif_raw <- readr::read_delim(here::here("raw", "image_classification_small_mammal_model_2025", "national_monitoring_rodents_cameratraps_image_classification_borgefjell_2024.txt"),
  delim = ";")
 
-coord_raw <- readr::read_delim(here::here("gbif", "raw", "Koordinates_SN_FI_RE_JO_KO_v2.csv"),
+coord_raw <- readr::read_delim(here::here("raw", "Koordinates_SN_FI_RE_JO_KO_v2.csv"),
  delim = ";")
 
 ```
@@ -97,6 +97,11 @@ metadata <- metadata %>%
 # Create media filePath
 metadata <- metadata %>%
   dplyr::mutate(filePath = fs::path("images_renamed", sn_locality, sn_site, year,v_image_name))
+  #file.exists(path_wd(metadata$filePath[5])) TRUE
+
+# Create eventID
+metadata <- metadata %>%
+  dplyr::mutate(eventID = paste(v_trigger_mode, v_event, sep = "_"))
 
 ```
 
