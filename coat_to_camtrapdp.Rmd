@@ -23,7 +23,7 @@ library(readr)
 # Import metadata and classifications from borgefjell
 
 ```{r}
-setwd("/run/user/210015540/gvfs/sftp:host=login.nird.sigma2.no,user=jwiel/nird/projects/NS11082K/national_monitoring/gbif/")
+setwd("/run/user/210015540/gvfs/sftp:host=login.nird.sigma2.no,user=jwiel/nird/projects/NS11082K/national_monitoring/")
 metadata_raw <- readr::read_delim(here::here("gbif", "raw", "image_metadata", "national_monitoring_rodents_cameratraps_image_metadata_borgefjell_2024.txt"),
  delim = ";")
 
@@ -69,9 +69,9 @@ metadata$captureMethod <- metadata %>%
   TRUE            ~ NA_character_
 ))
 
-# Format timestamp
-metadata$timestamp <- format(lubridate::ymd_hms(paste(metadata$t_date,metadata$t_time," "), tz = "UTC"),
- format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+# Format timestamp to UTC
+metadata$timestamp <- format(lubridate::ymd_hms(paste(metadata$t_date,metadata$t_time," "), tz = "CEST"), 
+format = "%Y-%m-%dT%H:%M:%OSZ")
 
  # Format deployment dates
  metadata <- metadata %>%
