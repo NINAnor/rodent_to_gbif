@@ -1,0 +1,378 @@
+---
+title: "coat_to_camtrapdp"
+author: "Julia Wiel"
+date: "`r Sys.Date()`"
+output: "html_document"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(here)
+library(dplyr)
+library(tidyr)
+library(frictionless)
+library(camtrapdp)
+library(lubridate)
+library(readr)
+```
+
+# Import metadata and classifications from borgefjell
+
+```{r}
+setwd("/run/user/210015540/gvfs/sftp:host=login.nird.sigma2.no,user=jwiel/nird/projects/NS11082K/national_monitoring/gbif/")
+metadata_raw <- readr::read_delim(here::here("gbif", "raw", "image_metadata", "national_monitoring_rodents_cameratraps_image_metadata_borgefjell_2024.txt"),
+ delim = ";")
+
+classif_raw <- readr::read_delim(here::here("gbif", "raw", "image_classification_small_mammal_model_2025", "national_monitoring_rodents_cameratraps_image_classification_borgefjell_2024.txt"),
+ delim = ";")
+
+coord_raw <- readr::read_delim(here::here("gbif", "raw", "Koordinates_SN_FI_RE_JO_KO_v2.csv"),
+ delim = ";")
+
+```
+
+# Create resources
+
+## Inspect raw data
+
+```{r}
+(unique_values_per_column <-
+  metadata_raw %>%
+  dplyr::summarise(dplyr::across(dplyr::everything(), ~ dplyr::n_distinct(.))) %>%
+  tidyr::pivot_longer(dplyr::everything(), names_to = "column", values_to = "n_unique"))
+
+(unique_values_per_column <-
+  classif_raw %>%
+  dplyr::summarise(dplyr::across(dplyr::everything(), ~ dplyr::n_distinct(.))) %>%
+  tidyr::pivot_longer(dplyr::everything(), names_to = "column", values_to = "n_unique"))
+
+(unique_values_per_column <-
+  coord_raw %>%
+  dplyr::summarise(dplyr::across(dplyr::everything(), ~ dplyr::n_distinct(.))) %>%
+  tidyr::pivot_longer(dplyr::everything(), names_to = "column", values_to = "n_unique"))
+```
+
+## Format information from metadata
+
+```{r}
+metadata <- metadata_raw
+
+# Format captureMethod
+metadata$captureMethod <- metadata %>%
+ dplyr::mutate(captureMethod = dplyr::case_when(
+  v_sequence == 0 ~ "timeLapse",
+  v_sequence > 0  ~ "activityDetection",
+  TRUE            ~ NA_character_
+))
+
+# Format timestamp
+metadata$timestamp <- format(lubridate::ymd_hms(paste(metadata$t_date,metadata$t_time," "), tz = "UTC"),
+ format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+
+ # Format deployment dates
+ metadata <- metadata %>%
+ dplyr::mutate(deploymentStart = min(timestamp),
+ deploymentEnd = max(timestamp))
+
+ ## Add coordinates to metadata
+ # Transform the key column
+coord <- coord_raw
+coord <- coord %>%
+  dplyr::mutate(sn_site = tolower(name)) %>% 
+  mutate(sn_site = gsub("-", "_", sn_site))
+
+# Merge columns from Koordinates into metadata
+metadata <- metadata %>% 
+  dplyr::left_join(coord, by = "sn_site")
+
+```
+
+## Format information from classifification
+
+```{r}
+classif <- classif_raw
+
+# Add observationType
+animal <- c("aves", "cricetidae", "lem_lem", "mus_erm", "mus_niv", "sor_sp", "unidentified_animal")
+classif <- classif %>%
+  dplyr::mutate(observationType = dplyr::case_when(
+    v_class_id %in% animal      ~ "animal",
+    v_class_id == "bad_quality" ~ "unknown",
+    v_class_id == "empty"       ~ "blank",
+    TRUE                        ~ "unclassified"
+  ))
+
+# Add scientificName
+classif <- classif %>%
+  dplyr::mutate(scientificName = dplyr::case_when(
+    v_class_id == "aves"     ~ "Aves",
+    v_class_id == "cricetidae" ~ "Cricetidae",
+    v_class_id == "lem_lem"       ~ "Lemmus lemmus",
+    v_class_id == "mus_erm"       ~ "Mustela erminea",
+    v_class_id == "mus_niv"      ~ "Mustela nivalis",
+    v_class_id == "sor_sp"      ~ "Sorex spp.",
+    TRUE                        ~ NA_character_
+  ))
+```
+
+## Create deployments resource_start changes
+
+```{r}
+deployments <-
+  metadata %>% 
+  dplyr::mutate(
+    deploymentID = metadata$sn_site, # Required
+    locationID = metadata$sc_section,
+    locationName = metadata$sn_locality,
+    latitude = metadata$lat, # Required
+    longitude = metadata$lon, # Required
+    coordinateUncertainty = NA_integer_,
+    deploymentStart = metadata$deploymentStart, # Required
+    deploymentEnd = metadata$deploymentEnd, # Required
+    setupBy = NA_character_,
+    cameraID = NA_character_,
+    cameraModel = NA_character_,
+    cameraPlatform = NA_character_,
+    cameraDelay = 60, # Eivind confirms?
+    cameraHeight = NA_real_,
+    cameraDepth = NA_real_,
+    cameraTilt = -90,
+    cameraHeading = NA_integer_,
+    detectionDistance = NA_real_,
+    timestampIssues = NA,
+    baitUse = FALSE,
+    featureType = NA_character_,
+    habitat = metadata$sc_type_of_sites_ecological, # Or "habitat" from coord_raw?
+    deploymentGroups = NA_character_,
+    deploymentTags = NA_character_,
+    deploymentComments = NA_character_,
+    .keep = "none") %>% 
+  dplyr::arrange(deploymentID) %>% 
+  dplyr::select(
+    deploymentID, locationID, locationName, latitude, longitude, 
+    coordinateUncertainty, deploymentStart, deploymentEnd, setupBy, 
+    cameraID, cameraModel, cameraPlatform, cameraDelay, cameraHeight, 
+    cameraDepth, cameraTilt, cameraHeading, detectionDistance,
+    timestampIssues, baitUse, featureType, habitat, deploymentGroups,
+    deploymentTags, deploymentComments
+  )
+```
+
+## Create media resource
+
+```{r}
+media <-
+  metadata %>% 
+  dplyr::mutate(
+    mediaID = metadata$v_image_name, # Required
+    deploymentID = metadata$sn_site, # Required
+    captureMethod = metadata$captureMethod,
+    timestamp = metadata$timestamp, # Required 
+    filePath = NA_character_,# Required
+    filePublic = FALSE, # Required
+    fileName = metadata$v_image_name_original,
+    fileMediatype = "image/jpeg", # Required
+    exifmetadata = NA, # maybe reconix https://camtrap-dp.tdwg.org/metadata/#media.exifmetadata
+    favorite = NA,
+    mediaComments = metadata$v_comment,
+    .keep = "none"
+  ) %>% 
+  dplyr::arrange(mediaID) %>%
+  dplyr::distinct() %>% 
+  dplyr::select(
+    mediaID, deploymentID, captureMethod, timestamp, filePath, 
+    filePublic, fileName, fileMediatype, exifmetadata, favorite, mediaComments
+  )
+```
+
+## Create observations resource
+
+```{r}
+observations <-
+  classif %>% 
+  dplyr::mutate(
+    observationID = NA_character_, # Required
+    deploymentID = classif$sn_site, # Required
+    mediaID = classif$v_image_name,
+    eventID = NA_character_, # maybe metadata$v_event
+    eventStart = NA_Date_, # Required Earliest event time stamp for a same v_event
+    eventEnd = NA_Date_, # Required Latest event time stamp for a same v_event
+    observationLevel = "media", # Required
+    observationType = classif$observationType, # Required
+    cameraSetupType = NA_character_,
+    scientificName = classif$scientificName,
+    count = NA_integer_,
+    lifeStage = NA_character_,
+    sex = NA_character_,
+    behavior = NA_character_,
+    individualID = NA_character_,
+    individualPositionRadius = NA_real_,
+    individualPositionAngle = NA_real_,
+    individualSpeed = NA_real_,
+    bboxX = NA_real_,
+    bboxY = NA_real_,
+    bboxWidth = NA_real_,
+    bboxHeight = NA_real_,
+    classifificationMethod = "machine", # or split manual and automatic
+    classififiedBy = "Small_mammal_classification_model_version_2025",
+    classifificationTimestamp = NA_Date_,
+    classifificationProbability = classif$v_confidence_automatic,
+    observationTags = NA_character_,
+    observationComments = NA_character_, # manual classification: v_observer_manual and v_type_manual_classification
+    .keep = "none"
+  ) %>% 
+  dplyr::arrange(observationID) %>% 
+  dplyr::select(
+    observationID, deploymentID, mediaID, eventID, eventStart,
+    eventEnd, observationLevel, observationType, cameraSetupType,
+    scientificName, count, lifeStage, sex, behavior, individualID,
+    individualPositionRadius, individualPositionAngle, individualSpeed,
+    bboxX, bboxY, bboxWidth, bboxHeight, classifificationMethod, classififiedBy, classifificationTimestamp,
+    classifificationProbability, observationTags, observationComments
+  )
+```
+
+# Write the three tables
+
+```{r}
+write.csv2(deployments, here::here("gbif", "processed", "deployments.csv"))
+write.csv2(media, here::here("gbif", "processed", "media.csv"))
+write.csv2(observations, here::here("gbif", "processed", "observations.csv"))
+```
+
+
+
+# Create metadata package
+
+```{r}
+acoustic <-
+  frictionless::create_package() %>%
+  add_resource(resource_name = "deployments", metadata = deployments, schema = here::here("camtrap-dp", "deployments-table-schema-acoustic.json")) %>%
+  add_resource(resource_name = "media", metadata = media, schema = here::here("camtrap-dp", "media-table-schema-acoustic.json")) %>%
+  add_resource(resource_name = "observations", metadata = observations, schema = here::here("camtrap-dp", "observations-table-schema-acoustic.json")) %>%
+  append(c(
+    name = "camtrap-dp-acoustic-example-metadataset", # Required
+    profile = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.1/camtrap-dp-profile.json", # Required (incorrect, hack to use read_camtrapdp())
+    id = NULL,
+    created = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), # Required
+    title = "The Sound of Norway: bird detections",
+    description = NULL,
+    version = "1.0",
+    keywords = c("acoustic", "birds", "passive acoustic monitoring"),
+    image = NULL,
+    homepage = NULL,
+    sources = NULL,
+    bibliographicCitation = "Bick, I. Avery, Vegar Bakkestuen, Benjamin Cretois, Ben Hillier, John A. Kålås, Marius Pedersen, Kiran Raja, et al. ‘National-Scale Acoustic Monitoring of Avian Biodiversity and Phenology’. Ecology, 24 May 2024. https://doi.org/10.1101/2024.05.21.595242",
+    coordinatePrecision = NULL,
+    spatial = NULL, # Required, but keep this empty, this comes later
+    temporal = NULL, # Required, but keep this empty, this comes later
+    taxonomic = NULL, # Required, but keep this empty, this comes later
+    relatedIdentifiers = NULL,
+    references = NULL
+  )) %>%
+  frictionless::create_package()
+
+acoustic$contributors <- list( # Required
+  list(
+    title = "Julia Wiel",
+    email = "julia.wiel@nina.no",
+    path = "https://orcid.org/0009-0009-7224-3953",
+    role = "contributor",
+    organization = "Norwegian Institute for Nature Research (NINA)"
+  ),
+  list(
+    title = "Benjamin Cretois",
+    email = "benjamin.cretois@nina.no",
+    path = "https://orcid.org/0000-0001-8668-3321",
+    role = "rightsHolder",
+    organization = "Norwegian Institute for Nature Research (NINA)"
+  ),
+  list(
+    title = "Carolyn Rosten",
+    email = "carolyn.rosten@nina.no",
+    path = "https://orcid.org/0000-0002-1117-444X",
+    role = "rightsHolder",
+    organization = "Norwegian Institute for Nature Research (NINA)"
+  ),
+  list(
+    title = "Sarab Sethi",
+    email = "sarab.sethi@imperial.ac.uk",
+    path = "https://orcid.org/0000-0002-5939-0432",
+    role = "principalInvestigator",
+    organization = "Imperial College London"
+  ),
+  list(
+    title = "I. Avery Bick",
+    email = "i.avery.bick@gmail.com",
+    path = "https://orcid.org/0000-0002-8007-9649",
+    role = "principalInvestigator",
+    organization = "Norwegian Institute for Nature Research (NINA)"
+  )
+)
+
+acoustic$licenses <- list(
+  list(
+    name = "CC0-1.0",
+    scope = "metadata" # Required
+  ),
+  list(
+    path = "http://creativecommons.org/licenses/by/4.0/",
+    scope = "media" # Required
+  )
+)
+
+acoustic$project <- list( # Required
+  # id = "",
+  title = "The Sound of Norway", # Required
+  # acronym = "",
+  description = "The Sound of Norway project monitors ecosystems across the nation with real- time recording cameras. Using machine learning to automatically classifify bird vocalisations, we can simultaneously track the distribution and migration patterns of many species on vast scales and over long time-periods.",
+  protocolType = list(c("acoustic")), # Required
+  samplingDesign = "systematicRandom", # Required
+  path = "https://thesoundofnorway.com/",
+  captureMethod = list(c("continuous")), # Required | Bug, see https://github.com/frictionlessmetadata/frictionless-r/issues/276
+  individualAnimals = FALSE, # Required
+  observationLevel = list(c("media")) # Required | Bug, see https://github.com/frictionlessmetadata/frictionless-r/issues/276
+)
+```
+
+## Create taxonomy
+
+```{r}
+map_taxonomy <- function(taxonomy) {
+  list(
+    scientificName = taxonomy$scientificName,
+    vernacularNames = list(
+      eng = taxonomy$EnglishName
+      )
+  )
+}
+```
+
+```{r}
+taxonomy_list <- apply(taxonomy, 1, as.list)
+acoustic$taxonomic <- purrr::map(taxonomy_list, map_taxonomy)
+```
+
+# Write metadata Package
+
+```{r}
+frictionless::write_package(acoustic, here::here("metadata", "interim", "sound_of_norway"))
+```
+
+# Read with camtrapdp
+
+This automatically updates the spatial, temporal and taxonomic coverage in the metametadata, based on the metadata.
+
+```{r}
+acoustic_dp <- camtrapdp::read_camtrapdp(here::here("metadata", "interim", "sound_of_norway", "metadatapackage.json"))
+```
+
+# Write Camtrap DP
+
+```{r}
+camtrapdp::write_camtrapdp(acoustic_dp, here::here("metadata", "processed", "sound_of_norway"))
+```
