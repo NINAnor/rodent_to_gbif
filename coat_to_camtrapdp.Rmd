@@ -96,12 +96,21 @@ metadata <- metadata %>%
 
 # Create media filePath
 metadata <- metadata %>%
-  dplyr::mutate(filePath = fs::path("images_renamed", sn_locality, sn_site, year,v_image_name))
-  #file.exists(path_wd(metadata$filePath[5])) TRUE
+  dplyr::mutate(filePath = fs::path("national_monitoring", "images_renamed", sn_locality, sn_site, year,v_image_name))
+  #TEST
+  #setwd("/run/user/210015540/gvfs/sftp:host=login.nird.sigma2.no,user=jwiel/nird/projects/NS11082K/")
+   # file.exists(path_wd(metadata$filePath[5]))
 
 # Create eventID
 metadata <- metadata %>%
   dplyr::mutate(eventID = paste(v_trigger_mode, v_event, sep = "_"))
+
+# Create event start and end
+metadata <- metadata %>%
+  dplyr::group_by(eventID) %>%
+  dplyr::mutate(eventStart = min(timestamp),
+  eventEnd = max(timestamp)) %>% dplyr::ungroup()
+  # Weird: 3310 unique eventID and unique eventStart and only 3305 unique eventEnd
 
 ```
 
@@ -132,13 +141,20 @@ classif <- classif %>%
     TRUE                        ~ NA_character_
   ))
 
-  # If multiple observation for one single image, index observationID
+  # Create observationID
 classif <- classif %>%
   dplyr::group_by(v_image_name) %>%
   dplyr::mutate(
     observationID = paste0(v_image_name, "_", row_number())
   ) %>%
   ungroup()
+
+# Add event info from metadata
+classif <- classif %>%
+  left_join(
+    metadata %>% select(v_image_name, eventID, eventStart, eventEnd),
+    by = "v_image_name"
+  )
 ```
 
 ## Create deployments resource_start changes
@@ -159,7 +175,7 @@ deployments <-
     cameraID = NA_character_,
     cameraModel = NA_character_,
     cameraPlatform = NA_character_,
-    cameraDelay = 60, # Eivind confirms?
+    cameraDelay = 60,
     cameraHeight = NA_real_,
     cameraDepth = NA_real_,
     cameraTilt = -90,
@@ -168,7 +184,7 @@ deployments <-
     timestampIssues = NA,
     baitUse = FALSE,
     featureType = NA_character_,
-    habitat = metadata$sc_type_of_sites_ecological, # Or "habitat" from coord_raw?
+    habitat = metadata$sc_type_of_sites_ecological,
     deploymentGroups = NA_character_,
     deploymentTags = NA_character_,
     deploymentComments = NA_character_,
@@ -194,11 +210,11 @@ media <-
     deploymentID = metadata$sn_site, # Required
     captureMethod = metadata$captureMethod,
     timestamp = metadata$timestamp, # Required 
-    filePath = NA_character_,# Required
+    filePath = metadata$filePath,# Required
     filePublic = FALSE, # Required
     fileName = metadata$v_image_name_original,
     fileMediatype = "image/jpeg", # Required
-    exifmetadata = NA, # maybe reconix https://camtrap-dp.tdwg.org/metadata/#media.exifmetadata
+    exifmetadata = NA,
     favorite = NA,
     mediaComments = metadata$v_comment,
     .keep = "none"
@@ -220,9 +236,9 @@ observations <-
     observationID = classif$observationID, # Required
     deploymentID = classif$sn_site, # Required
     mediaID = classif$v_image_name,
-    eventID = NA_character_, # maybe metadata$v_event
-    eventStart = NA_Date_, # Required Earliest event time stamp for a same v_event
-    eventEnd = NA_Date_, # Required Latest event time stamp for a same v_event
+    eventID = classif$eventID,
+    eventStart = classif$eventStart, # Required
+    eventEnd = classif$eventEnd, # Required
     observationLevel = "media", # Required
     observationType = classif$observationType, # Required
     cameraSetupType = NA_character_,
