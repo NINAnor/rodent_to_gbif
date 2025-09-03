@@ -131,6 +131,14 @@ classif <- classif %>%
     v_class_id == "sor_sp"      ~ "Sorex spp.",
     TRUE                        ~ NA_character_
   ))
+
+  # If multiple observation for one single image, index observationID
+classif <- classif %>%
+  dplyr::group_by(v_image_name) %>%
+  dplyr::mutate(
+    observationID = paste0(v_image_name, "_", row_number())
+  ) %>%
+  ungroup()
 ```
 
 ## Create deployments resource_start changes
@@ -209,7 +217,7 @@ media <-
 observations <-
   classif %>% 
   dplyr::mutate(
-    observationID = NA_character_, # Required
+    observationID = classif$observationID, # Required
     deploymentID = classif$sn_site, # Required
     mediaID = classif$v_image_name,
     eventID = NA_character_, # maybe metadata$v_event
