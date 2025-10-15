@@ -155,6 +155,10 @@ classif <- classif %>%
     metadata %>% select(v_image_name, eventID, eventStart, eventEnd),
     by = "v_image_name"
   )
+
+# Priorise manual observation and format with automatic
+#classif <- classif %>%
+ # dplyr::mutate(classificationMethod = )
 ```
 
 ## Create deployments resource_start changes
@@ -174,7 +178,6 @@ deployments <-
     setupBy = NA_character_,
     cameraID = NA_character_,
     cameraModel = NA_character_,
-    cameraPlatform = NA_character_,
     cameraDelay = 60,
     cameraHeight = NA_real_,
     cameraDepth = NA_real_,
@@ -193,7 +196,7 @@ deployments <-
   dplyr::select(
     deploymentID, locationID, locationName, latitude, longitude, 
     coordinateUncertainty, deploymentStart, deploymentEnd, setupBy, 
-    cameraID, cameraModel, cameraPlatform, cameraDelay, cameraHeight, 
+    cameraID, cameraModel, cameraDelay, cameraHeight, 
     cameraDepth, cameraTilt, cameraHeading, detectionDistance,
     timestampIssues, baitUse, featureType, habitat, deploymentGroups,
     deploymentTags, deploymentComments
@@ -214,7 +217,7 @@ media <-
     filePublic = FALSE, # Required
     fileName = metadata$v_image_name_original,
     fileMediatype = "image/jpeg", # Required
-    exifmetadata = NA,
+    exifData = NA,
     favorite = NA,
     mediaComments = metadata$v_comment,
     .keep = "none"
@@ -223,7 +226,7 @@ media <-
   dplyr::distinct() %>% 
   dplyr::select(
     mediaID, deploymentID, captureMethod, timestamp, filePath, 
-    filePublic, fileName, fileMediatype, exifmetadata, favorite, mediaComments
+    filePublic, fileName, fileMediatype, exifData, favorite, mediaComments
   )
 ```
 
@@ -255,10 +258,10 @@ observations <-
     bboxY = NA_real_,
     bboxWidth = NA_real_,
     bboxHeight = NA_real_,
-    classifificationMethod = "machine", # or split manual and automatic
-    classififiedBy = "Small_mammal_classification_model_version_2025",
-    classifificationTimestamp = NA_Date_,
-    classifificationProbability = classif$v_confidence_automatic,
+    classificationMethod = "machine", # or split manual and automatic
+    classifiedBy = "Small_mammal_classification_model_version_2025",
+    classificationTimestamp = NA_Date_,
+    classificationProbability = classif$v_confidence_automatic,
     observationTags = NA_character_,
     observationComments = NA_character_, # manual classification: v_observer_manual and v_type_manual_classification
     .keep = "none"
@@ -269,17 +272,18 @@ observations <-
     eventEnd, observationLevel, observationType, cameraSetupType,
     scientificName, count, lifeStage, sex, behavior, individualID,
     individualPositionRadius, individualPositionAngle, individualSpeed,
-    bboxX, bboxY, bboxWidth, bboxHeight, classifificationMethod, classififiedBy, classifificationTimestamp,
-    classifificationProbability, observationTags, observationComments
+    bboxX, bboxY, bboxWidth, bboxHeight, classificationMethod,
+    classifiedBy, classificationTimestamp, classificationProbability,
+    observationTags, observationComments
   )
 ```
 
 # Write the three tables
 
 ```{r}
-write.csv2(deployments, here::here("gbif", "processed", "deployments.csv"))
-write.csv2(media, here::here("gbif", "processed", "media.csv"))
-write.csv2(observations, here::here("gbif", "processed", "observations.csv"))
+write.csv2(deployments, here::here("processed", "deployments.csv"))
+write.csv2(media, here::here("processed", "media.csv"))
+write.csv2(observations, here::here("processed", "observations.csv"))
 ```
 
 
@@ -287,24 +291,24 @@ write.csv2(observations, here::here("gbif", "processed", "observations.csv"))
 # Create metadata package
 
 ```{r}
-acoustic <-
+properties <-
   frictionless::create_package() %>%
-  add_resource(resource_name = "deployments", metadata = deployments, schema = here::here("camtrap-dp", "deployments-table-schema-acoustic.json")) %>%
-  add_resource(resource_name = "media", metadata = media, schema = here::here("camtrap-dp", "media-table-schema-acoustic.json")) %>%
-  add_resource(resource_name = "observations", metadata = observations, schema = here::here("camtrap-dp", "observations-table-schema-acoustic.json")) %>%
+  add_resource(resource_name = "deployments", data = deployments, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/deployments-table-schema.json") %>%
+  add_resource(resource_name = "media", data = media, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/media-table-schema.json") %>%
+  add_resource(resource_name = "observations", data = observations, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/observations-table-schema.json") %>%
   append(c(
-    name = "camtrap-dp-acoustic-example-metadataset", # Required
+    name = "camtrap-dp-rodent-example-metadataset", # Required
     profile = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.1/camtrap-dp-profile.json", # Required (incorrect, hack to use read_camtrapdp())
     id = NULL,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), # Required
-    title = "The Sound of Norway: bird detections",
+    title = "National monitoring of rodents with camera traps in Borgefjell, Norway", # Required
     description = NULL,
     version = "1.0",
-    keywords = c("acoustic", "birds", "passive acoustic monitoring"),
+    keywords = c("rodent", "camera trap", "national monitoring"),
     image = NULL,
     homepage = NULL,
     sources = NULL,
-    bibliographicCitation = "Bick, I. Avery, Vegar Bakkestuen, Benjamin Cretois, Ben Hillier, John A. Kålås, Marius Pedersen, Kiran Raja, et al. ‘National-Scale Acoustic Monitoring of Avian Biodiversity and Phenology’. Ecology, 24 May 2024. https://doi.org/10.1101/2024.05.21.595242",
+    bibliographicCitation = NULL,
     coordinatePrecision = NULL,
     spatial = NULL, # Required, but keep this empty, this comes later
     temporal = NULL, # Required, but keep this empty, this comes later
@@ -313,92 +317,36 @@ acoustic <-
     references = NULL
   )) %>%
   frictionless::create_package()
+```
 
-acoustic$contributors <- list( # Required
-  list(
-    title = "Julia Wiel",
-    email = "julia.wiel@nina.no",
-    path = "https://orcid.org/0009-0009-7224-3953",
-    role = "contributor",
-    organization = "Norwegian Institute for Nature Research (NINA)"
-  ),
-  list(
-    title = "Benjamin Cretois",
-    email = "benjamin.cretois@nina.no",
-    path = "https://orcid.org/0000-0001-8668-3321",
-    role = "rightsHolder",
-    organization = "Norwegian Institute for Nature Research (NINA)"
-  ),
-  list(
-    title = "Carolyn Rosten",
-    email = "carolyn.rosten@nina.no",
-    path = "https://orcid.org/0000-0002-1117-444X",
-    role = "rightsHolder",
-    organization = "Norwegian Institute for Nature Research (NINA)"
-  ),
-  list(
-    title = "Sarab Sethi",
-    email = "sarab.sethi@imperial.ac.uk",
-    path = "https://orcid.org/0000-0002-5939-0432",
-    role = "principalInvestigator",
-    organization = "Imperial College London"
-  ),
-  list(
-    title = "I. Avery Bick",
-    email = "i.avery.bick@gmail.com",
-    path = "https://orcid.org/0000-0002-8007-9649",
+```{r}
+
+properties$contributors <- list( # Required
+    title = "Eivind Flittie Kleiven",
+    email = "eivind.kleiven@nina.no",
+    path = "https://orcid.org/0000-0002-9556-0195",
     role = "principalInvestigator",
     organization = "Norwegian Institute for Nature Research (NINA)"
   )
-)
 
-acoustic$licenses <- list(
-  list(
-    name = "CC0-1.0",
-    scope = "metadata" # Required
-  ),
-  list(
-    path = "http://creativecommons.org/licenses/by/4.0/",
-    scope = "media" # Required
-  )
-)
-
-acoustic$project <- list( # Required
-  # id = "",
-  title = "The Sound of Norway", # Required
-  # acronym = "",
-  description = "The Sound of Norway project monitors ecosystems across the nation with real- time recording cameras. Using machine learning to automatically classifify bird vocalisations, we can simultaneously track the distribution and migration patterns of many species on vast scales and over long time-periods.",
-  protocolType = list(c("acoustic")), # Required
+properties$project <- list( # Required
+  title = "National rodent monitoring progam, Norway", # Required
   samplingDesign = "systematicRandom", # Required
-  path = "https://thesoundofnorway.com/",
-  captureMethod = list(c("continuous")), # Required | Bug, see https://github.com/frictionlessmetadata/frictionless-r/issues/276
+  captureMethod = list(c("activityDetection, timeLapse")), # Required
   individualAnimals = FALSE, # Required
-  observationLevel = list(c("media")) # Required | Bug, see https://github.com/frictionlessmetadata/frictionless-r/issues/276
+  observationLevel = list(c("media", "event")) # Required
 )
-```
-
-## Create taxonomy
-
-```{r}
-map_taxonomy <- function(taxonomy) {
-  list(
-    scientificName = taxonomy$scientificName,
-    vernacularNames = list(
-      eng = taxonomy$EnglishName
-      )
-  )
-}
-```
-
-```{r}
-taxonomy_list <- apply(taxonomy, 1, as.list)
-acoustic$taxonomic <- purrr::map(taxonomy_list, map_taxonomy)
 ```
 
 # Write metadata Package
 
 ```{r}
-frictionless::write_package(acoustic, here::here("metadata", "interim", "sound_of_norway"))
+# Identify problematic columns
+sapply(properties, class)
+```
+
+```{r}
+frictionless::write_package(properties, here::here("interim"))
 ```
 
 # Read with camtrapdp
@@ -406,11 +354,13 @@ frictionless::write_package(acoustic, here::here("metadata", "interim", "sound_o
 This automatically updates the spatial, temporal and taxonomic coverage in the metametadata, based on the metadata.
 
 ```{r}
-acoustic_dp <- camtrapdp::read_camtrapdp(here::here("metadata", "interim", "sound_of_norway", "metadatapackage.json"))
+properties_dp <- camtrapdp::read_camtrapdp(here::here("metadata", "interim", "metadatapackage.json"))
 ```
 
 # Write Camtrap DP
 
 ```{r}
-camtrapdp::write_camtrapdp(acoustic_dp, here::here("metadata", "processed", "sound_of_norway"))
+camtrapdp::write_camtrapdp(properties_dp, here::here("metadata", "processed"))
 ```
+
+
