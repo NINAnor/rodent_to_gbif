@@ -211,7 +211,7 @@ media <-
   dplyr::mutate(
     mediaID = metadata$v_image_name, # Required
     deploymentID = metadata$sn_site, # Required
-    captureMethod = metadata$captureMethod,
+    captureMethod = as.character(metadata$captureMethod),
     timestamp = metadata$timestamp, # Required 
     filePath = metadata$filePath,# Required
     filePublic = FALSE, # Required
@@ -321,20 +321,22 @@ properties <-
 
 ```{r}
 
-properties$contributors <- list( # Required
+properties$contributors <- list( #Required
+  list(
     title = "Eivind Flittie Kleiven",
     email = "eivind.kleiven@nina.no",
     path = "https://orcid.org/0000-0002-9556-0195",
     role = "principalInvestigator",
     organization = "Norwegian Institute for Nature Research (NINA)"
   )
+)
 
-properties$project <- list( # Required
-  title = "National rodent monitoring progam, Norway", # Required
-  samplingDesign = "systematicRandom", # Required
-  captureMethod = list(c("activityDetection, timeLapse")), # Required
-  individualAnimals = FALSE, # Required
-  observationLevel = list(c("media", "event")) # Required
+properties$project <- list( #Required
+  title = "National rodent monitoring progam, Norway",
+  samplingDesign = "systematicRandom",
+  captureMethod = "activityDetection",
+  individualAnimals = FALSE,
+  observationLevel = "media"
 )
 ```
 
@@ -343,7 +345,12 @@ properties$project <- list( # Required
 ```{r}
 # Identify problematic columns
 sapply(properties, class)
+
+# TEST: Remove problematic fields before writing
+properties$contributors <- NULL
+properties$project <- NULL
 ```
+
 
 ```{r}
 frictionless::write_package(properties, here::here("interim"))
@@ -361,6 +368,42 @@ properties_dp <- camtrapdp::read_camtrapdp(here::here("metadata", "interim", "me
 
 ```{r}
 camtrapdp::write_camtrapdp(properties_dp, here::here("metadata", "processed"))
+```
+
+
+## Check that the three tables conform to the Camtrap DP schemas
+```{r}
+# --- Compare data frames to Camtrap DP schemas ---
+library(jsonlite)
+
+# Compare deployments
+deployments_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/deployments-table-schema.json"
+deployments_schema <- fromJSON(deployments_schema_url)
+deployments_expected <- deployments_schema$fields$name
+deployments_actual <- colnames(deployments)
+cat("\nDeployments table:\n")
+cat("Missing fields: ", setdiff(deployments_expected, deployments_actual), collapse = ", "), "\n")
+cat("Extra fields: ", paste(setdiff(deployments_actual, deployments_expected), collapse = ", "), "\n")
+
+# Compare media
+media_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/media-table-schema.json"
+media_schema <- fromJSON(media_schema_url)
+media_expected <- media_schema$fields$name
+media_actual <- colnames(media)
+cat("\nMedia table:\n")
+cat("Missing fields: ", paste(setdiff(media_expected, media_actual), collapse = ", "), "\n")
+cat("Extra fields: ", paste(setdiff(media_actual, media_expected), collapse = ", "), "\n")
+
+# Compare observations
+observations_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/observations-table-schema.json"
+observations_schema <- fromJSON(observations_schema_url)
+observations_expected <- observations_schema$fields$name
+observations_actual <- colnames(observations)
+cat("\nObservations table:\n")
+cat("Missing fields: ", paste(setdiff(observations_expected, observations_actual), collapse = ", "), "\n")
+cat("Extra fields: ", paste(setdiff(observations_actual, observations_expected), collapse = ", "), "\n")
+
+
 ```
 
 
