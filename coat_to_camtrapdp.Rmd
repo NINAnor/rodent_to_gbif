@@ -407,3 +407,33 @@ cat("Extra fields: ", paste(setdiff(observations_actual, observations_expected),
 ```
 
 
+## Presentation
+
+```{r}
+# Select three random rows from metadata_raw and display as a nice table
+set.seed(123) # for reproducibility
+sampled_metadata <- metadata_raw[sample(nrow(metadata_raw), 3), ]
+View(sampled_metadata)
+
+sampled_classification <- classif_raw[sample(nrow(classif_raw), 3), ]
+non_na_cols <- colnames(sampled_classification)[colSums(!is.na(sampled_classification)) > 0]
+non_na_cols <- non_na_cols[!is.na(non_na_cols)] # Remove NA column names
+View(sampled_classification[, non_na_cols])
+
+sampled_coordinates <- coord_raw[sample(nrow(coord_raw), 3), ]
+View(sampled_coordinates)
+
+sampled_deployments <- deployments[sample(nrow(deployments), 3), ]
+non_na_cols <- colnames(sampled_deployments)[colSums(!is.na(sampled_deployments)) > 0]
+View(sampled_deployments[, non_na_cols])
+
+sampled_media <- media[sample(nrow(media), 3), ]
+non_na_cols <- colnames(sampled_media)[colSums(!is.na(sampled_media)) > 0]
+non_na_cols <- non_na_cols[!is.na(non_na_cols)] # Remove NA column names
+View(sampled_media[, non_na_cols])
+
+sampled_observations <- observations[sample(nrow(observations), 3), ]
+non_na_cols <- colnames(sampled_observations)[colSums(!is.na(sampled_observations)) > 0]
+non_na_cols <- non_na_cols[!is.na(non_na_cols)] # Remove NA column names
+View(sampled_observations[, non_na_cols])
+```
