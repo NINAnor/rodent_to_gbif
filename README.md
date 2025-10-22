@@ -1,3 +1,20 @@
+# rodent_to_gbif — example repository
+
+This repository holds code and example data for converting camera-trap outputs into Darwin Core / GBIF-ready formats.
+
+Note about local backups
+- A local folder `gbif_backups/` exists at the repository root. It contains untracked backup copies of the original large data files (file names ending in `.bak`). These backups are intentionally kept outside version control and are listed in `.gitignore`.
+- The repository itself contains a trimmed example (branch `example-trimmed`) with sampled rows to keep the repo small and shareable.
+
+Original full datasets
+- The full original datasets are not stored in this repository. If you need to reference or restore the full raw files, retrieve them from the institutional storage location used by your group (e.g. NIRD/Sigma2 storage, S3, or Zenodo). Replace the text below with the exact URL or storage path used by your project:
+
+  ORIGINALS_LOCATION: <update-with-path-or-URL>
+
+Git LFS
+- Large files in `raw/` and `processed/` are tracked with Git LFS so the repository can hold example data while managing large binaries efficiently.
+
+If you want me to update the README with an exact storage location or add a short retrieval script, tell me the storage path and I will add it.
 # nina-template-r
 
 Modify this `README.md` file, to explain what your software does.
