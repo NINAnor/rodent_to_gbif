@@ -382,7 +382,7 @@ deployments_schema <- fromJSON(deployments_schema_url)
 deployments_expected <- deployments_schema$fields$name
 deployments_actual <- colnames(deployments)
 cat("\nDeployments table:\n")
-cat("Missing fields: ", setdiff(deployments_expected, deployments_actual), collapse = ", "), "\n")
+cat("Missing fields: ", paste(setdiff(deployments_expected, deployments_actual), collapse = ", "), "\n")
 cat("Extra fields: ", paste(setdiff(deployments_actual, deployments_expected), collapse = ", "), "\n")
 
 # Compare media
