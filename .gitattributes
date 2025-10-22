@@ -1,0 +1,2 @@
+raw/image_classification_small_mammal_model_2025/* filter=lfs diff=lfs merge=lfs -text
+processed/*.csv filter=lfs diff=lfs merge=lfs -text
