@@ -66,13 +66,14 @@ coord_raw <- readr::read_delim(here::here("raw", "Koordinates_SN_FI_RE_JO_KO_v2.
 ```{r}
 metadata <- metadata_raw
 
-# Format captureMethod
-metadata$captureMethod <- metadata %>%
- dplyr::mutate(captureMethod = dplyr::case_when(
-  v_sequence == 0 ~ "timeLapse",
-  v_sequence > 0  ~ "activityDetection",
-  TRUE            ~ NA_character_
-))
+# Format captureMethod (per-row)
+# Compute captureMethod for each row and store as a character vector
+metadata <- metadata %>%
+  dplyr::mutate(captureMethod = dplyr::case_when(
+    v_sequence == 0 ~ "timeLapse",
+    v_sequence > 0  ~ "activityDetection",
+    TRUE            ~ NA_character_
+  ))
 
 # Format timestamp to UTC
 metadata$timestamp <- format(lubridate::ymd_hms(paste(metadata$t_date,metadata$t_time," "), tz = "CEST"), 
@@ -343,16 +344,6 @@ properties$project <- list( #Required
 # Write metadata Package
 
 ```{r}
-# Identify problematic columns
-sapply(properties, class)
-
-# TEST: Remove problematic fields before writing
-properties$contributors <- NULL
-properties$project <- NULL
-```
-
-
-```{r}
 frictionless::write_package(properties, here::here("interim"))
 ```
 
@@ -361,13 +352,13 @@ frictionless::write_package(properties, here::here("interim"))
 This automatically updates the spatial, temporal and taxonomic coverage in the metametadata, based on the metadata.
 
 ```{r}
-properties_dp <- camtrapdp::read_camtrapdp(here::here("metadata", "interim", "metadatapackage.json"))
+properties_dp <- camtrapdp::read_camtrapdp(here::here("interim", "datapackage.json"))
 ```
 
 # Write Camtrap DP
 
 ```{r}
-camtrapdp::write_camtrapdp(properties_dp, here::here("metadata", "processed"))
+camtrapdp::write_camtrapdp(properties_dp, here::here("processed"))
 ```
 
 
