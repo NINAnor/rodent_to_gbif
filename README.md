@@ -1,5 +1,11 @@
 # rodent_to_gbif — example repository
 
+## borgefjell branch
+
+In this branch lays the most recent progress on the convertion from COAT format to a Camtrap Data Package.
+
+## General purpose of the repo
+
 This repository holds code and example data for converting camera-trap outputs into Darwin Core / GBIF-ready formats.
 
 Note about local backups
