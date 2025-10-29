@@ -329,8 +329,8 @@ properties <-
   add_resource(resource_name = "media", data = media, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/media-table-schema.json") %>%
   add_resource(resource_name = "observations", data = observations, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/observations-table-schema.json") %>%
   append(c(
+    profile = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/camtrap-dp-profile.json", # Required modified from 1.0.1 to 1.0 but no effect in .json
     name = "camtrap-dp-rodent-example-metadataset", # Required
-    profile = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.1/camtrap-dp-profile.json", # Required (incorrect, hack to use read_camtrapdp())
     id = NULL,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), # Required
     title = "National monitoring of rodents with camera traps in Borgefjell, Norway", # Required
