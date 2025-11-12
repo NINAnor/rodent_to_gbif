@@ -747,7 +747,7 @@
   ],
   "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/camtrap-dp-profile.json",
   "name": "camtrap-dp-rodent-example-metadataset",
-  "created": "2025-10-24T15:43:45Z",
+  "created": "2025-11-12T16:12:28Z",
   "title": "National monitoring of rodents with camera traps in Borgefjell, Norway",
   "version": "1.0",
   "keywords1": "rodent",
@@ -765,8 +765,8 @@
   "project": {
     "title": "National rodent monitoring progam, Norway",
     "samplingDesign": "systematicRandom",
-    "captureMethod": "activityDetection",
+    "captureMethod": ["activityDetection", "timeLapse"],
     "individualAnimals": false,
-    "observationLevel": "media"
+    "observationLevel": ["media", "event"]
   }
 }
