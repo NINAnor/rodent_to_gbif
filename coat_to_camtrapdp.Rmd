@@ -194,6 +194,7 @@ deployments <-
     deploymentComments = NA_character_,
     .keep = "none") %>% 
   dplyr::arrange(deploymentID) %>% 
+  dplyr::distinct(deploymentID, .keep_all = TRUE) %>%  # Keep only first occurrence of each sn_site
   dplyr::select(
     deploymentID, locationID, locationName, latitude, longitude, 
     coordinateUncertainty, deploymentStart, deploymentEnd, setupBy, 
@@ -392,6 +393,7 @@ properties_dp <- camtrapdp::read_camtrapdp(here::here("interim", "datapackage.js
 camtrapdp::write_camtrapdp(properties_dp, here::here("processed"))
 ```
 
+# Fix Camtrap DP JSON errors
 ```{r}
 # Fix the schema references that got corrupted by camtrapdp processing
 final_package <- jsonlite::fromJSON(here::here("processed", "datapackage.json"))
