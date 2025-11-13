@@ -267,7 +267,7 @@
             "example": ""
           }
         ],
-        "missingValues": "",
+        "missingValues": ["", "NA", "NaN", "nan"],
         "primaryKey": "deploymentID"
       }
     },
@@ -396,7 +396,7 @@
             "example": "corrupted file"
           }
         ],
-        "missingValues": "",
+        "missingValues": ["", "NA", "NaN", "nan"],
         "primaryKey": "mediaID",
         "foreignKeys": [
           {
@@ -724,7 +724,7 @@
             "example": ""
           }
         ],
-        "missingValues": "",
+        "missingValues": ["", "NA", "NaN", "nan"],
         "primaryKey": "observationID",
         "foreignKeys": [
           {
@@ -745,9 +745,9 @@
       }
     }
   ],
-  "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/camtrap-dp-profile.json",
+  "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/camtrap-dp-profile.json",
   "name": "camtrap-dp-rodent-example-metadataset",
-  "created": "2025-11-12T16:12:28Z",
+  "created": "2025-11-13T15:51:31Z",
   "title": "National monitoring of rodents with camera traps in Borgefjell, Norway",
   "version": "1.0",
   "keywords1": "rodent",
