@@ -157,9 +157,18 @@ classif <- classif %>%
     by = "v_image_name"
   )
 
-# Priorise manual observation and format with automatic
-#classif <- classif %>%
- # dplyr::mutate(classificationMethod = )
+# Prioritize manual observation over automatic when both exist for same image
+classif <- classif %>%
+  dplyr::group_by(v_image_name) %>%
+  dplyr::arrange(desc(!is.na(v_presence_manual)), desc(!is.na(v_observer_manual))) %>%
+  dplyr::slice(1) %>%  # Keep only the first row (manual if available, otherwise automatic)
+  dplyr::ungroup() %>%
+  dplyr::mutate(
+    classificationMethod = dplyr::case_when(
+      !is.na(v_presence_manual) | !is.na(v_observer_manual) ~ "human",
+      TRUE ~ "machine"
+    )
+  )
 ```
 
 ## Create deployments resource_start changes
@@ -260,12 +269,18 @@ observations <-
     bboxY = NA_real_,
     bboxWidth = NA_real_,
     bboxHeight = NA_real_,
-    classificationMethod = "machine", # or split manual and automatic
-    classifiedBy = "Small_mammal_classification_model_version_2025",
+    classificationMethod = classif$classificationMethod,
+    classifiedBy = dplyr::case_when(
+      classificationMethod == "human" ~ classif$v_observer_manual,
+      TRUE ~ "Small_mammal_classification_model_version_2025"
+    ),
     classificationTimestamp = NA_Date_,
     classificationProbability = classif$v_confidence_automatic,
     observationTags = NA_character_,
-    observationComments = NA_character_, # manual classification: v_observer_manual and v_type_manual_classification
+    observationComments = dplyr::case_when(
+      classificationMethod == "human" ~ classif$v_type_manual_classification,
+      TRUE ~ NA_character_
+    ),
     .keep = "none"
   ) %>% 
   dplyr::arrange(observationID) %>% 
