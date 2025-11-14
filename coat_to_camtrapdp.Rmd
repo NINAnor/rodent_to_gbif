@@ -176,7 +176,7 @@ deployments <-
   metadata %>% 
   dplyr::mutate(
     deploymentID = metadata$sn_site, # Required
-    locationID = metadata$sc_section,
+    locationID = NA_character_,
     locationName = metadata$sn_locality,
     latitude = metadata$lat, # Required
     longitude = metadata$lon, # Required
