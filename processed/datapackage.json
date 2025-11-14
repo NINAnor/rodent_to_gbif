@@ -30,7 +30,7 @@
   ],
   "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/camtrap-dp-profile.json",
   "name": "camtrap-dp-rodent-example-metadataset",
-  "created": "2025-11-13T15:42:03Z",
+  "created": "2025-11-14T10:54:55Z",
   "title": "National monitoring of rodents with camera traps in Borgefjell, Norway",
   "version": "1.0",
   "keywords1": "rodent",
@@ -80,11 +80,11 @@
     "type": "Polygon",
     "coordinates": [
       [
-        [null, null],
-        [null, null],
-        [null, null],
-        [null, null],
-        [null, null]
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0],
+        [0, 0]
       ]
     ]
   }

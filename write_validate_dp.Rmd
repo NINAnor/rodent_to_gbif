@@ -1,0 +1,173 @@
+---
+title: "coat_to_camtrapdp"
+author: "Julia Wiel"
+date: "`r Sys.Date()`"
+output: "3 tables in csv"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(here)
+#library(dplyr)
+#library(tidyr)
+library(frictionless)
+library(camtrapdp)
+#library(lubridate)
+#library(readr)
+#library(fs)
+```
+
+```{r}
+# Read the three tables exported from COAT
+deployments <- read.csv(here::here("interim", "deployments.csv"))
+media <- read.csv(here::here("interim", "media.csv"))
+observations <- read.csv(here::here("interim", "observations.csv"))
+```
+
+## Check that the three tables conform to the Camtrap DP schemas
+```{r}
+# --- Compare data frames to Camtrap DP schemas ---
+library(jsonlite)
+
+# Compare deployments
+deployments_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/deployments-table-schema.json"
+deployments_schema <- fromJSON(deployments_schema_url)
+deployments_expected <- deployments_schema$fields$name
+deployments_actual <- colnames(deployments)
+cat("\nDeployments table:\n")
+cat("Missing fields: ", paste(setdiff(deployments_expected, deployments_actual), collapse = ", "), "\n")
+cat("Extra fields: ", paste(setdiff(deployments_actual, deployments_expected), collapse = ", "), "\n")
+
+# Compare media
+media_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/media-table-schema.json"
+media_schema <- fromJSON(media_schema_url)
+media_expected <- media_schema$fields$name
+media_actual <- colnames(media)
+cat("\nMedia table:\n")
+cat("Missing fields: ", paste(setdiff(media_expected, media_actual), collapse = ", "), "\n")
+cat("Extra fields: ", paste(setdiff(media_actual, media_expected), collapse = ", "), "\n")
+
+# Compare observations
+observations_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/observations-table-schema.json"
+observations_schema <- fromJSON(observations_schema_url)
+observations_expected <- observations_schema$fields$name
+observations_actual <- colnames(observations)
+cat("\nObservations table:\n")
+cat("Missing fields: ", paste(setdiff(observations_expected, observations_actual), collapse = ", "), "\n")
+cat("Extra fields: ", paste(setdiff(observations_actual, observations_expected), collapse = ", "), "\n")
+```
+
+# Create metadata package
+
+```{r}
+properties <-
+  frictionless::create_package() %>%
+  add_resource(resource_name = "deployments", data = deployments, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/deployments-table-schema.json") %>%
+  add_resource(resource_name = "media", data = media, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/media-table-schema.json") %>%
+  add_resource(resource_name = "observations", data = observations, schema = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/observations-table-schema.json") %>%
+  append(c(
+    profile = "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/camtrap-dp-profile.json", # Required modified from 1.0.1 to 1.0 but no effect in .json
+    name = "camtrap-dp-rodent-example-metadataset", # Required
+    id = NULL,
+    created = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), # Required
+    title = "National monitoring of rodents with camera traps in Borgefjell, Norway", # Required
+    description = NULL,
+    version = "1.0",
+    keywords = c("rodent", "camera trap", "national monitoring"),
+    image = NULL,
+    homepage = NULL,
+    sources = NULL,
+    bibliographicCitation = NULL,
+    coordinatePrecision = NULL,
+    spatial = NULL, # Required, but keep this empty, this comes later
+    temporal = NULL, # Required, but keep this empty, this comes later
+    taxonomic = NULL, # Required, but keep this empty, this comes later
+    relatedIdentifiers = NULL,
+    references = NULL
+  )) %>%
+  frictionless::create_package()
+```
+
+```{r}
+
+properties$contributors <- list( #Required
+  list(
+    title = "Eivind Flittie Kleiven",
+    email = "eivind.kleiven@nina.no",
+    path = "https://orcid.org/0000-0002-9556-0195",
+    role = "principalInvestigator",
+    organization = "Norwegian Institute for Nature Research (NINA)"
+  )
+)
+
+properties$project <- list( #Required
+  title = "National rodent monitoring progam, Norway",
+  samplingDesign = "systematicRandom",
+  captureMethod = c("activityDetection", "timeLapse"),
+  individualAnimals = FALSE,
+  observationLevel = c("media", "event")
+)
+```
+
+# Write metadata Package
+
+```{r}
+frictionless::write_package(properties, here::here("interim"))
+```
+
+# Read with camtrapdp
+
+This automatically updates the spatial, temporal and taxonomic coverage in the metametadata, based on the metadata.
+
+```{r}
+properties_dp <- camtrapdp::read_camtrapdp(here::here("interim", "datapackage.json"))
+```
+
+# Write Camtrap DP
+
+```{r}
+camtrapdp::write_camtrapdp(properties_dp, here::here("processed"))
+```
+
+# Fix Camtrap DP JSON errors from converstion through camtrapdp
+```{r}
+# Fix the schema references that got corrupted by camtrapdp processing
+final_package <- jsonlite::fromJSON(here::here("processed", "datapackage.json"))
+
+# Replace the schema arrays with simple URL strings
+# The resources is a data.frame, so we access the schema column directly
+final_package$resources$schema[[1]] <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/deployments-table-schema.json"
+final_package$resources$schema[[2]] <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/media-table-schema.json"
+final_package$resources$schema[[3]] <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/observations-table-schema.json"
+
+# Fix the profile version that gets
+final_package$profile <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/camtrap-dp-profile.json"
+
+# Fix the spatial coordinates (replace null values with zeros)
+final_package$spatial <- list(
+  type = "Polygon",
+  coordinates = list(list(
+    c(0, 0),
+    c(0, 0),
+    c(0, 0),
+    c(0, 0),
+    c(0, 0)
+  ))
+)
+
+# Write the corrected package back to file
+jsonlite::write_json(final_package, here::here("processed", "datapackage.json"), pretty = TRUE, auto_unbox = TRUE)
+```
+
+
+# Test writing in Dwc and EML
+```{r}
+camtrapdp::write_dwc(properties_dp, here::here("Dwc_EML"))
+#camtrapdp::write_eml(properties_dp, here::here("Dwc_EML"))
+``` 
+
+
