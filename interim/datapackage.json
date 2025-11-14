@@ -747,8 +747,9 @@
   ],
   "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/camtrap-dp-profile.json",
   "name": "camtrap-dp-rodent-example-metadataset",
-  "created": "2025-11-14T11:13:48Z",
+  "created": "2025-11-14T16:38:00Z",
   "title": "National monitoring of rodents with camera traps in Borgefjell, Norway",
+  "description": "blablabla",
   "version": "1.0",
   "keywords1": "rodent",
   "keywords2": "camera trap",
@@ -780,5 +781,6 @@
       "path": "https://creativecommons.org/licenses/by-nc/4.0/",
       "scope": "media"
     }
-  ]
+  ],
+  "keywords": ["rodent", "camera trap", "national monitoring"]
 }

@@ -1,14 +1,13 @@
 ---
-title: "coat_to_camtrapdp"
+title: "write_validate_dp"
 author: "Julia Wiel"
 date: "`r Sys.Date()`"
-output: "3 tables in csv"
+output: "camtrap DP"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 
 ```{r}
 library(here)
@@ -16,45 +15,15 @@ library(frictionless)
 library(camtrapdp)
 ```
 
+# Import tables from coat_to_camtrapdp.Rmd
+
 ```{r}
-# Read the three tables exported from COAT
+# Read the three tables
 deployments <- read.csv(here::here("interim", "deployments.csv"))
 media <- read.csv(here::here("interim", "media.csv"))
 observations <- read.csv(here::here("interim", "observations.csv"))
 ```
 
-## Check that the three tables conform to the Camtrap DP schemas
-```{r}
-# --- Compare data frames to Camtrap DP schemas ---
-library(jsonlite)
-
-# Compare deployments
-deployments_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/deployments-table-schema.json"
-deployments_schema <- fromJSON(deployments_schema_url)
-deployments_expected <- deployments_schema$fields$name
-deployments_actual <- colnames(deployments)
-cat("\nDeployments table:\n")
-cat("Missing fields: ", paste(setdiff(deployments_expected, deployments_actual), collapse = ", "), "\n")
-cat("Extra fields: ", paste(setdiff(deployments_actual, deployments_expected), collapse = ", "), "\n")
-
-# Compare media
-media_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/media-table-schema.json"
-media_schema <- fromJSON(media_schema_url)
-media_expected <- media_schema$fields$name
-media_actual <- colnames(media)
-cat("\nMedia table:\n")
-cat("Missing fields: ", paste(setdiff(media_expected, media_actual), collapse = ", "), "\n")
-cat("Extra fields: ", paste(setdiff(media_actual, media_expected), collapse = ", "), "\n")
-
-# Compare observations
-observations_schema_url <- "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/observations-table-schema.json"
-observations_schema <- fromJSON(observations_schema_url)
-observations_expected <- observations_schema$fields$name
-observations_actual <- colnames(observations)
-cat("\nObservations table:\n")
-cat("Missing fields: ", paste(setdiff(observations_expected, observations_actual), collapse = ", "), "\n")
-cat("Extra fields: ", paste(setdiff(observations_actual, observations_expected), collapse = ", "), "\n")
-```
 
 # Create metadata package
 
@@ -70,9 +39,9 @@ properties <-
     id = NULL,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), # Required
     title = "National monitoring of rodents with camera traps in Borgefjell, Norway", # Required
-    description = NULL,
+    description = "blablabla", # Required
     version = "1.0",
-    keywords = c("rodent", "camera trap", "national monitoring"),
+    keywords = list("rodent", "camera trap", "national monitoring"),
     image = NULL,
     homepage = NULL,
     sources = NULL,
@@ -119,6 +88,8 @@ properties$licenses <- list( #Required
     scope = "media"
   )
 )
+
+properties$keywords <- c("rodent", "camera trap", "national monitoring")
 ```
 
 # Write metadata Package
@@ -159,7 +130,7 @@ jsonlite::write_json(final_package, here::here("processed", "datapackage.json"),
 
 # Test writing in Dwc and EML
 ```{r}
-camtrapdp::write_dwc(properties_dp, here::here("Dwc_EML"))
+#camtrapdp::write_dwc(properties_dp, here::here("Dwc_EML"))
 #camtrapdp::write_eml(properties_dp, here::here("Dwc_EML"))
 ``` 
 
