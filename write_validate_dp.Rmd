@@ -90,6 +90,8 @@ properties$licenses <- list( #Required
 )
 
 properties$keywords <- c("rodent", "camera trap", "national monitoring")
+
+properties$gbifIngestion <- list(observationLevel = "media")
 ```
 
 # Write metadata Package
@@ -127,11 +129,9 @@ final_package$resources$schema[[3]] <- "https://raw.githubusercontent.com/tdwg/c
 jsonlite::write_json(final_package, here::here("processed", "datapackage.json"), pretty = TRUE, auto_unbox = TRUE)
 ```
 
-
 # Test writing in Dwc and EML
 ```{r}
-#camtrapdp::write_dwc(properties_dp, here::here("Dwc_EML"))
+rodent_dp <- camtrapdp::read_camtrapdp(here::here("processed", "datapackage.json"))
+camtrapdp::write_dwc(rodent_dp, here::here("Dwc", "Interim"))
 #camtrapdp::write_eml(properties_dp, here::here("Dwc_EML"))
 ``` 
-
-

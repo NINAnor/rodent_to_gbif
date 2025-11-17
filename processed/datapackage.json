@@ -30,7 +30,7 @@
   ],
   "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/camtrap-dp-profile.json",
   "name": "camtrap-dp-rodent-example-metadataset",
-  "created": "2025-11-14T16:38:00Z",
+  "created": "2025-11-17T11:58:03Z",
   "title": "National monitoring of rodents with camera traps in Borgefjell, Norway",
   "description": "blablabla",
   "version": "1.0",
@@ -66,6 +66,9 @@
     }
   ],
   "keywords": ["rodent", "camera trap", "national monitoring"],
+  "gbifIngestion": {
+    "observationLevel": "media"
+  },
   "taxonomic": [
     {
       "scientificName": "Aves"
