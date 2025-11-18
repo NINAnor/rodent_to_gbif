@@ -129,13 +129,13 @@ properties$licenses <- list( #Required
     scope = "data"
   ),
   list(
-    name = "CC-BY4.0",
+    name = "CC-BY-4.0",
     path = "https://creativecommons.org/licenses/by/4.0/",
     scope = "media"
   )
 )
 
-properties$keywords <- c("rodent", "camera trap", "national monitoring")
+properties$keywords <- c("small rodent", "lemming", "vole", "camera trap", "alpine tundra")
 
 properties$gbifIngestion <- list(observationLevel = "media")
 ```

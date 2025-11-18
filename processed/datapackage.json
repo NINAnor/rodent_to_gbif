@@ -110,12 +110,12 @@
       "scope": "data"
     },
     {
-      "name": "CC-BY4.0",
+      "name": "CC-BY-4.0",
       "path": "https://creativecommons.org/licenses/by/4.0/",
       "scope": "media"
     }
   ],
-  "keywords": ["rodent", "camera trap", "national monitoring"],
+  "keywords": ["small rodent", "lemming", "vole", "camera trap", "alpine tundra"],
   "gbifIngestion": {
     "observationLevel": "media"
   },
