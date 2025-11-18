@@ -124,13 +124,13 @@ properties$project <- list( #Required
 
 properties$licenses <- list( #Required
   list(
-    name = "CC-BY-NC-4.0",
-    path = "https://creativecommons.org/licenses/by-nc/4.0/",
+    name = "CC-BY-4.0",
+    path = "https://creativecommons.org/licenses/by/4.0/",
     scope = "data"
   ),
   list(
-    name = "CC-BY-NC-4.0",
-    path = "https://creativecommons.org/licenses/by-nc/4.0/",
+    name = "CC-BY4.0",
+    path = "https://creativecommons.org/licenses/by/4.0/",
     scope = "media"
   )
 )
