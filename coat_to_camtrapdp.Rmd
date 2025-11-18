@@ -337,6 +337,34 @@ print("---")
 print(paste("Number of 'unidentified_animal' in classif$v_class_id:", unidentified_animal_count))
 print(paste("Do NA count and unidentified_animal count match?", na_count == unidentified_animal_count))
 
+# Find rows where eventStart exists but eventEnd is missing
+rows_missing_eventEnd <- observations %>%
+  dplyr::filter(!is.na(eventStart) & is.na(eventEnd))
+
+print("---")
+print(paste("Number of rows with eventStart but missing eventEnd:", nrow(rows_missing_eventEnd)))
+
+if(nrow(rows_missing_eventEnd) > 0) {
+  print("Rows with missing eventEnd:")
+  print(rows_missing_eventEnd)
+}
+
+# Find rows with identical eventEnd values
+rows_with_duplicate_eventEnd <- observations %>%
+  dplyr::filter(!is.na(eventEnd)) %>%
+  dplyr::group_by(eventEnd) %>%
+  dplyr::filter(n() > 1) %>%
+  dplyr::ungroup() %>%
+  dplyr::arrange(eventEnd)
+
+print("---")
+print(paste("Number of rows with duplicated eventEnd values:", nrow(rows_with_duplicate_eventEnd)))
+
+if(nrow(rows_with_duplicate_eventEnd) > 0) {
+  print("Rows with identical eventEnd values:")
+  print(rows_with_duplicate_eventEnd)
+}
+
 View(classif_inspect)
 View(observations_inspect)
 
