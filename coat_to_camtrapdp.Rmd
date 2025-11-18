@@ -144,7 +144,7 @@ classif <- classif %>%
 classif <- classif %>%
   dplyr::group_by(v_image_name) %>%
   dplyr::mutate(
-    observationID = paste0(v_image_name, "_", row_number())
+    observationID = paste0(tools::file_path_sans_ext(v_image_name), "_", row_number())
   ) %>%
   ungroup()
 
