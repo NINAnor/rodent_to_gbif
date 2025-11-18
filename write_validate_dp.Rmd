@@ -41,11 +41,11 @@ properties <-
     title = "National monitoring of rodents with camera traps in Borgefjell, Norway", # Required
     description = "blablabla", # Required
     version = "1.0",
-    keywords = list("rodent", "camera trap", "national monitoring"),
+    keywords = list("small rodent", "lemming", "vole", "camera trap", "alpine tundra"),
     image = NULL,
-    homepage = NULL,
+    homepage = "https://www.nina.no/smaagnagere",
     sources = NULL,
-    bibliographicCitation = NULL,
+    bibliographicCitation = "e.	Kleiven, E.F., Böhner, H., Soininen, E.M., Ims, R.A., Framstad, E., Jepsen, J. & Eide, N.E. (2025)  Camera trap based small rodent monitoring: Data from Norwegian alpine tundra",
     coordinatePrecision = NULL,
     spatial = NULL, # Required, but keep this empty, this comes later
     temporal = NULL, # Required, but keep this empty, this comes later
