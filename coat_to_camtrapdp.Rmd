@@ -224,7 +224,7 @@ media <-
     timestamp = metadata$timestamp, # Required 
     filePath = metadata$filePath,# Required
     filePublic = FALSE, # Required
-    fileName = metadata$v_image_name_original,
+    fileName = NA_character_,
     fileMediatype = "image/jpeg", # Required
     exifData = NA,
     favorite = NA,
@@ -302,3 +302,43 @@ write.csv(media, here::here("interim", "media.csv"), row.names = FALSE)
 write.csv(observations, here::here("interim", "observations.csv"), row.names = FALSE)
 ```
 
+# Inspect created tables
+```{r}
+classif_inspect <- (unique_values_per_column <-
+  classif_raw %>%
+  dplyr::summarise(dplyr::across(dplyr::everything(), ~ dplyr::n_distinct(.))) %>%
+  tidyr::pivot_longer(dplyr::everything(), names_to = "column", values_to = "n_unique"))
+
+observations_inspect <-(unique_values_per_column <-
+  observations %>%
+  dplyr::summarise(dplyr::across(dplyr::everything(), ~ dplyr::n_distinct(.))) %>%
+  tidyr::pivot_longer(dplyr::everything(), names_to = "column", values_to = "n_unique"))
+
+# Check unique scientificName values when observationType = "animal"
+animal_observations <- observations %>%
+  dplyr::filter(observationType == "animal")
+
+animal_scientific_names <- animal_observations %>%
+  dplyr::distinct(scientificName) %>%
+  dplyr::pull(scientificName)
+
+na_count <- sum(is.na(animal_observations$scientificName))
+total_animal_obs <- nrow(animal_observations)
+
+# Check number of "unidentified_animal" in original classification data
+unidentified_animal_count <- sum(classif$v_class_id == "unidentified_animal", na.rm = TRUE)
+
+print("Unique scientificName values when observationType = 'animal':")
+print(animal_scientific_names)
+print(paste("Number of NA values in scientificName for animal observations:", na_count))
+print(paste("Total animal observations:", total_animal_obs))
+print(paste("Percentage of NA values:", round(na_count/total_animal_obs * 100, 2), "%"))
+print("---")
+print(paste("Number of 'unidentified_animal' in classif$v_class_id:", unidentified_animal_count))
+print(paste("Do NA count and unidentified_animal count match?", na_count == unidentified_animal_count))
+
+View(classif_inspect)
+View(observations_inspect)
+
+
+```
