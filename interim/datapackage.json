@@ -747,7 +747,7 @@
   ],
   "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0/camtrap-dp-profile.json",
   "name": "camtrap-dp-rodent-example-metadataset",
-  "created": "2025-11-17T11:58:03Z",
+  "created": "2025-11-18T14:53:27Z",
   "title": "National monitoring of rodents with camera traps in Borgefjell, Norway",
   "description": "blablabla",
   "version": "1.0",
@@ -757,8 +757,54 @@
   "contributors": [
     {
       "title": "Eivind Flittie Kleiven",
+      "firstName": "Eivind Flittie",
+      "lastName": "Kleiven",
       "email": "eivind.kleiven@nina.no",
       "path": "https://orcid.org/0000-0002-9556-0195",
+      "role": "principalInvestigator",
+      "organization": "Norwegian Institute for Nature Research (NINA)"
+    },
+    {
+      "title": "Hanna Böhner",
+      "firstName": "Hanna",
+      "lastName": "Böhner",
+      "email": "hanna.bohner@uit.no",
+      "path": "https://orcid.org/0000-0002-9556-0195",
+      "role": "contributor",
+      "organization": "UiT, The Arctic University of Norway"
+    },
+    {
+      "title": "Erik Framstad",
+      "firstName": "Erik",
+      "lastName": "Framstad",
+      "email": "erik.framstad@nina.no",
+      "role": "contributor",
+      "organization": "Norwegian Institute for Nature Research (NINA)"
+    },
+    {
+      "title": "Eeva M. Soininen",
+      "firstName": "Eeva M.",
+      "lastName": "Soininen",
+      "email": "eeva.soininen@uit.no",
+      "path": "https://orcid.org/0000-0003-4280-8350",
+      "role": "principalInvestigator",
+      "organization": "UiT, The Arctic University of Norway"
+    },
+    {
+      "title": "Rolf Anker Ims",
+      "firstName": "Rolf Anker",
+      "lastName": "Ims",
+      "email": "rolf.ims@uit.no",
+      "path": "https://orcid.org/0000-0002-3687-9753",
+      "role": "contributor",
+      "organization": "UiT, The Arctic University of Norway"
+    },
+    {
+      "title": "Nina E. Eide",
+      "firstName": "Nina E.",
+      "lastName": "Eide",
+      "email": "nina.eide@nina.no",
+      "path": "https://orcid.org/0000-0002-7645-3300",
       "role": "principalInvestigator",
       "organization": "Norwegian Institute for Nature Research (NINA)"
     }

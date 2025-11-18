@@ -61,8 +61,54 @@ properties <-
 properties$contributors <- list( #Required
   list(
     title = "Eivind Flittie Kleiven",
+    firstName = "Eivind Flittie",
+    lastName = "Kleiven",
     email = "eivind.kleiven@nina.no",
     path = "https://orcid.org/0000-0002-9556-0195",
+    role = "principalInvestigator",
+    organization = "Norwegian Institute for Nature Research (NINA)"
+  ),
+  list(
+    title = "Hanna Böhner",
+    firstName = "Hanna",
+    lastName = "Böhner",
+    email = "hanna.bohner@uit.no",
+    path = "https://orcid.org/0000-0002-9556-0195",
+    role = "contributor",
+    organization = "UiT, The Arctic University of Norway"
+  ),
+  list(
+    title = "Erik Framstad",
+    firstName = "Erik",
+    lastName = "Framstad",
+    email = "erik.framstad@nina.no",
+    role = "contributor",
+    organization = "Norwegian Institute for Nature Research (NINA)"
+  ),
+  list(
+    title = "Eeva M. Soininen",
+    firstName = "Eeva M.",
+    lastName = "Soininen",
+    email = "eeva.soininen@uit.no",
+    path = "https://orcid.org/0000-0003-4280-8350",
+    role = "principalInvestigator",
+    organization = "UiT, The Arctic University of Norway"
+  ),
+  list(
+    title = "Rolf Anker Ims",
+    firstName = "Rolf Anker",
+    lastName = "Ims",
+    email = "rolf.ims@uit.no",
+    path = "https://orcid.org/0000-0002-3687-9753",
+    role = "contributor",
+    organization = "UiT, The Arctic University of Norway"
+  ),
+  list(
+    title = "Nina E. Eide",
+    firstName = "Nina E.",
+    lastName = "Eide",
+    email = "nina.eide@nina.no",
+    path = "https://orcid.org/0000-0002-7645-3300",
     role = "principalInvestigator",
     organization = "Norwegian Institute for Nature Research (NINA)"
   )
