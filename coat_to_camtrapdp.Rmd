@@ -187,7 +187,7 @@ deployments <-
     cameraID = NA_character_,
     cameraModel = NA_character_,
     cameraDelay = 60,
-    cameraHeight = NA_real_,
+    cameraHeight = 0.15,
     cameraDepth = NA_real_,
     cameraTilt = -90,
     cameraHeading = NA_integer_,
