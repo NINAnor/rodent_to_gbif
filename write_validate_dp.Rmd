@@ -38,8 +38,17 @@ properties <-
     name = "camtrap-dp-rodent-example-metadataset", # Required
     id = NULL,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), # Required
-    title = "National monitoring of rodents with camera traps in Borgefjell, Norway", # Required
-    description = "blablabla", # Required
+    title = "Camera trap based small rodent monitoring: Data from Norwegian alpine tundra", # Required
+    description = "Small rodents are a key species impacting all levels in the alpine tundra food-web. 
+    In 2023 the Norwegian Institute of Nature Research established a national monitoring program for 
+    small rodents based on camera trap in the Alpine Tunda on behalf of the Norwegian Enviroenmtal 
+    Agency. Data from 5 mountain areas are available here. In each mountain area we cover the most 
+    important habitat for small rodents (heath, hummock mire and snowbed) and two alpine zones 
+    (low and mid alpine zone). We apply tunnel camera traps, developed and described by 
+    Soininen et al. (2015) and the images captured are processed using the semi-automatic workflow 
+    established by Böhner et al. (2023). Abundance indices can be estimated following temporal and 
+    spatial aggregation of detection event following Kleiven et al. 2023. See Kleiven et. al. 2022 
+    for further details about the monitoring program.", # Required
     version = "1.0",
     keywords = list("small rodent", "lemming", "vole", "camera trap", "alpine tundra"),
     image = NULL,
@@ -51,7 +60,12 @@ properties <-
     temporal = NULL, # Required, but keep this empty, this comes later
     taxonomic = NULL, # Required, but keep this empty, this comes later
     relatedIdentifiers = NULL,
-    references = NULL
+    references = c(
+      "Böhner, H., Kleiven, E. F., Ims, R. A., & Soininen, E. M. (2023). A semi-automatic workflow to process images from small mammal camera traps. Ecological Informatics, 76, 102150.",
+      "Kleiven, E.F., Framstad, E., Bakkestuen, V., Böhner, H., Cretois, B., Frassinelli, F., Ims, R.A., Jepsen, J.U., Soininen, E.M. & Eide, N.E. 2022. Ny nasjonal smågnagerovervåking i fjell basert på kamerafeller. Forslag til innsamlingsdesign og dataprosessering. NINA Rapport 2170. Norsk institutt for naturforskning.",
+      "Kleiven, E.F., Nicolau, P.G., Sørbye, S.H., Aars, J., Yoccoz, N.G. and Ims, R.A. (2023b), Using camera traps to monitor cyclic vole populations. Remote Sens Ecol Conserv, 9: 390-403. https://doi.org/10.1002/rse2.317",
+      "Soininen, E. M., Jensvoll, I., Killengreen, S. T., & Ims, R. A. (2015). Under the snow: a new camera trap opens the white box of subnivean ecology. Remote Sensing in Ecology and Conservation, 1(1), 29-38."
+      )
   )) %>%
   frictionless::create_package()
 ```
@@ -115,7 +129,7 @@ properties$contributors <- list( #Required
 )
 
 properties$project <- list( #Required
-  title = "National rodent monitoring progam, Norway",
+  title = "Camera trap based small rodent monitoring: Data from Norwegian alpine tundra",
   samplingDesign = "systematicRandom",
   captureMethod = c("activityDetection", "timeLapse"),
   individualAnimals = FALSE,
