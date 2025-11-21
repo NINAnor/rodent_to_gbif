@@ -77,10 +77,12 @@ metadata <- metadata %>%
 metadata$timestamp <- format(lubridate::ymd_hms(paste(metadata$t_date,metadata$t_time," "), tz = "CEST"), 
 format = "%Y-%m-%dT%H:%M:%OSZ")
 
- # Format deployment dates
- metadata <- metadata %>%
- dplyr::mutate(deploymentStart = min(timestamp),
- deploymentEnd = max(timestamp))
+# Format deployment dates
+metadata <- metadata %>%
+dplyr::group_by(sn_site) %>%
+dplyr::mutate(deploymentStart = min(timestamp),
+deploymentEnd = max(timestamp)) %>%
+ungroup()
 
  ## Add coordinates to metadata
  # Transform the key column
@@ -96,9 +98,6 @@ metadata <- metadata %>%
 # Create media filePath
 metadata <- metadata %>%
   dplyr::mutate(filePath = fs::path("national_monitoring", "images_renamed", sn_locality, sn_site, year,v_image_name))
-  #TEST
-  #setwd("/run/user/210015540/gvfs/sftp:host=login.nird.sigma2.no,user=jwiel/nird/projects/NS11082K/")
-   # file.exists(path_wd(metadata$filePath[5]))
 
 # Create eventID
 metadata <- metadata %>%
@@ -191,7 +190,7 @@ classif <- classif %>%
   )
 ```
 
-## Create deployments resource_start changes
+## Create deployments resource
 
 ```{r}
 deployments <-
@@ -210,7 +209,7 @@ deployments <-
     cameraModel = NA_character_,
     cameraDelay = 60,
     cameraHeight = 0.15,
-    cameraDepth = metadata$sc_section,
+    cameraDepth = NA_real_,
     cameraTilt = -90,
     cameraHeading = NA_integer_,
     detectionDistance = NA_real_,
