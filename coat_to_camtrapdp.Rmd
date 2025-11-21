@@ -128,11 +128,23 @@ classif <- classif %>%
     TRUE                        ~ "unclassified"
   ))
 
-# Create observationID
+# Add scientificName
+classif <- classif %>%
+  dplyr::mutate(scientificName = dplyr::case_when(
+    v_class_id == "aves"     ~ "Aves",
+    v_class_id == "cricetidae" ~ "Cricetidae",
+    v_class_id == "lem_lem"       ~ "Lemmus lemmus",
+    v_class_id == "mus_erm"       ~ "Mustela erminea",
+    v_class_id == "mus_niv"      ~ "Mustela nivalis",
+    v_class_id == "sor_sp"      ~ "Sorex spp.",
+    TRUE                        ~ NA_character_
+  ))
+
+# Create observationID based on mediaID (v_image_name) without .JPG
 classif <- classif %>%
   dplyr::group_by(v_image_name) %>%
   dplyr::mutate(
-    observationID = paste0(tools::file_path_sans_ext(v_image_name), "_", row_number())
+    observationID = paste0(tools::file_path_sans_ext(v_image_name))
   ) %>%
   ungroup()
 
@@ -143,25 +155,27 @@ classif <- classif %>%
     by = "v_image_name"
   )
 
-  # Keep only the 1 row (among 9) that contains the final classification for one image
-    # Keep the manual classification if it exists
-    # Fill out the related fields accordingly
+# Keep only the rows with manual or automatic classification
 classif <- classif %>%
-  dplyr:: filter(v_presence_manual == 1 | v_presence_automatic == 1)
-  
+  dplyr::group_by(v_image_name) %>%
+  dplyr::filter(v_presence_automatic == 1 | v_presence_manual == 1) %>%
+  dplyr::ungroup()
+
+# When both manual and automatic classifications exist for the same image,
+#  keep only the manual classification
+classif <- classif %>%
+  dplyr::group_by(v_image_name) %>%
+  dplyr::filter(
+    if (n() > 1) v_presence_manual == 1 else TRUE
+  ) %>%
+  ungroup() 
+
+  #nrow(classif_raw)/9 == nrow(classif)  # Check that the reduction in rows makes sense
+  #unique(anyDuplicated(classif$v_image_name))  # Check that there are no duplicated images left
+
+# Fill out the related fields according to human/machine classification
 classif <- classif %>%
   dplyr::mutate(
-    scientificName = dplyr::case_when(
-      v_presence_manual == 1 ~ v_type_manual_classification,
-      v_presence_automatic == 1 ~ dplyr::case_when(
-        v_class_id == "aves"     ~ "Aves",
-        v_class_id == "cricetidae" ~ "Cricetidae",
-        v_class_id == "lem_lem"       ~ "Lemmus lemmus",
-        v_class_id == "mus_erm"       ~ "Mustela erminea",
-        v_class_id == "mus_niv"      ~ "Mustela nivalis",
-        v_class_id == "sor_sp"      ~ "Sorex spp."
-        )
-    ),
     classifiedBy = dplyr::case_when(
       v_presence_manual == 1 ~ v_observer_manual,
       v_presence_automatic == 1 ~ "Small_mammal_classification_model_version_2025"
@@ -279,11 +293,8 @@ observations <-
     classifiedBy = classif$classifiedBy,
     classificationTimestamp = NA_Date_,
     classificationProbability = classif$classificationProbability,
-    observationTags = NA_character_,
-    observationComments = NA_character_, #dplyr::case_when(
-      #classificationMethod == "human" ~ classif$v_type_manual_classification,
-      #TRUE ~ NA_character_
-    #),
+    observationTags = classif$v_type_manual_classification,
+    observationComments = classif$v_comment,
     .keep = "none"
   ) %>% 
   dplyr::arrange(observationID) %>% 
