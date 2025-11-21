@@ -216,10 +216,10 @@ deployments <-
     detectionDistance = NA_real_,
     timestampIssues = NA,
     baitUse = FALSE,
-    featureType = metadata$sc_section,
+    featureType = NA_character_,
     habitat = metadata$sc_type_of_sites_ecological,
     deploymentGroups = NA_character_,
-    deploymentTags = NA_character_,
+    deploymentTags = metadata$sc_section,
     deploymentComments = NA_character_,
     .keep = "none") %>% 
   dplyr::arrange(deploymentID) %>% 
