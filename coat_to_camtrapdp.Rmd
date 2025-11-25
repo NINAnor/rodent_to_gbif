@@ -101,13 +101,15 @@ metadata <- metadata %>%
 
 # Create eventID
 metadata <- metadata %>%
-  dplyr::mutate(eventID = paste(v_trigger_mode, v_event, sep = "_"))
+  dplyr::mutate(eventID = paste(sn_site, v_trigger_mode, v_event, sep = "_"))
 
 # Create event start and end
 metadata <- metadata %>%
   dplyr::group_by(eventID) %>%
-  dplyr::mutate(eventStart = min(timestamp),
-  eventEnd = max(timestamp)) %>% dplyr::ungroup()
+  dplyr::mutate(
+    eventStart = min(timestamp),
+    eventEnd = max(timestamp)) %>% 
+  dplyr::ungroup()
   # Weird: 3310 unique eventID and unique eventStart and only 3305 unique eventEnd
 
 ```

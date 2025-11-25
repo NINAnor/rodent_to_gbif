@@ -30,9 +30,9 @@
   ],
   "profile": "https://raw.githubusercontent.com/tdwg/camtrap-dp/1.0.2/camtrap-dp-profile.json",
   "name": "camtrap-dp-rodent-example-metadataset",
-  "created": "2025-11-18T16:44:49Z",
-  "title": "National monitoring of rodents with camera traps in Borgefjell, Norway",
-  "description": "blablabla",
+  "created": "2025-11-25T15:06:15Z",
+  "title": "Camera trap based small rodent monitoring: Data from Norwegian alpine tundra",
+  "description": "Small rodents are a key species impacting all levels in the alpine tundra food-web. \n    In 2023 the Norwegian Institute of Nature Research established a national monitoring program for \n    small rodents based on camera trap in the Alpine Tunda on behalf of the Norwegian Enviroenmtal \n    Agency. Data from 5 mountain areas are available here. In each mountain area we cover the most \n    important habitat for small rodents (heath, hummock mire and snowbed) and two alpine zones \n    (low and mid alpine zone). We apply tunnel camera traps, developed and described by \n    Soininen et al. (2015) and the images captured are processed using the semi-automatic workflow \n    established by Böhner et al. (2023). Abundance indices can be estimated following temporal and \n    spatial aggregation of detection event following Kleiven et al. 2023. See Kleiven et. al. 2022 \n    for further details about the monitoring program.",
   "version": "1.0",
   "keywords1": "small rodent",
   "keywords2": "lemming",
@@ -41,6 +41,10 @@
   "keywords5": "alpine tundra",
   "homepage": "https://www.nina.no/smaagnagere",
   "bibliographicCitation": "e.Kleiven, E.F., Böhner, H., Soininen, E.M., Ims, R.A., Framstad, E., Jepsen, J. & Eide, N.E. (2025)  Camera trap based small rodent monitoring: Data from Norwegian alpine tundra",
+  "references1": "Böhner, H., Kleiven, E. F., Ims, R. A., & Soininen, E. M. (2023). A semi-automatic workflow to process images from small mammal camera traps. Ecological Informatics, 76, 102150.",
+  "references2": "Kleiven, E.F., Framstad, E., Bakkestuen, V., Böhner, H., Cretois, B., Frassinelli, F., Ims, R.A., Jepsen, J.U., Soininen, E.M. & Eide, N.E. 2022. Ny nasjonal smågnagerovervåking i fjell basert på kamerafeller. Forslag til innsamlingsdesign og dataprosessering. NINA Rapport 2170. Norsk institutt for naturforskning.",
+  "references3": "Kleiven, E.F., Nicolau, P.G., Sørbye, S.H., Aars, J., Yoccoz, N.G. and Ims, R.A. (2023b), Using camera traps to monitor cyclic vole populations. Remote Sens Ecol Conserv, 9: 390-403. https://doi.org/10.1002/rse2.317",
+  "references4": "Soininen, E. M., Jensvoll, I., Killengreen, S. T., & Ims, R. A. (2015). Under the snow: a new camera trap opens the white box of subnivean ecology. Remote Sensing in Ecology and Conservation, 1(1), 29-38.",
   "contributors": [
     {
       "title": "Eivind Flittie Kleiven",
@@ -97,7 +101,7 @@
     }
   ],
   "project": {
-    "title": "National rodent monitoring progam, Norway",
+    "title": "Camera trap based small rodent monitoring: Data from Norwegian alpine tundra",
     "samplingDesign": "systematicRandom",
     "captureMethod": ["activityDetection", "timeLapse"],
     "individualAnimals": false,
@@ -121,9 +125,6 @@
   },
   "taxonomic": [
     {
-      "scientificName": "Aves"
-    },
-    {
       "scientificName": "Cricetidae"
     },
     {
@@ -131,9 +132,6 @@
     },
     {
       "scientificName": "Mustela erminea"
-    },
-    {
-      "scientificName": "Mustela nivalis"
     },
     {
       "scientificName": "Sorex spp."
